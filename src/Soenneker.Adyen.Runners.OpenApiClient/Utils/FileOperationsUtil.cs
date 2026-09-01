@@ -15,6 +15,7 @@ using Soenneker.Extensions.ValueTask;
 using Soenneker.Kiota.Util.Abstract;
 using Soenneker.Utils.Directory.Abstract;
 using Soenneker.Utils.File.Abstract;
+using Soenneker.Utils.Path.Abstract;
 using System.Collections.Generic;
 using Soenneker.OpenApi.Fixer.Abstract;
 using Soenneker.OpenApi.Merger.Abstract;
@@ -34,11 +35,13 @@ public sealed class FileOperationsUtil : IFileOperationsUtil
     private readonly IKiotaUtil _kiotaUtil;
     private readonly IFileUtil _fileUtil;
     private readonly IDirectoryUtil _directoryUtil;
+    private readonly IPathUtil _pathUtil;
     private readonly IOpenApiMerger _openApiMerger;
     private readonly IOpenApiFixer _openApiFixer;
 
     public FileOperationsUtil(ILogger<FileOperationsUtil> logger, IConfiguration configuration, IGitUtil gitUtil, IDotnetUtil dotnetUtil,
-        IFileUtil fileUtil, IDirectoryUtil directoryUtil, IOpenApiMerger openApiMerger, IKiotaUtil kiotaUtil, IOpenApiFixer openApiFixer)
+        IFileUtil fileUtil, IDirectoryUtil directoryUtil, IPathUtil pathUtil, IOpenApiMerger openApiMerger, IKiotaUtil kiotaUtil,
+        IOpenApiFixer openApiFixer)
     {
         _logger = logger;
         _configuration = configuration;
@@ -47,6 +50,7 @@ public sealed class FileOperationsUtil : IFileOperationsUtil
         _kiotaUtil = kiotaUtil;
         _fileUtil = fileUtil;
         _directoryUtil = directoryUtil;
+        _pathUtil = pathUtil;
         _openApiMerger = openApiMerger;
         _openApiFixer = openApiFixer;
     }
@@ -88,13 +92,12 @@ public sealed class FileOperationsUtil : IFileOperationsUtil
     {
         string jsonSourceDirectory = Path.Combine(sourceDirectory, "json");
 
-        if (!Directory.Exists(jsonSourceDirectory))
+        if (!await _directoryUtil.Exists(jsonSourceDirectory, cancellationToken).NoSync())
             throw new DirectoryNotFoundException($"Adyen JSON directory was not found: '{jsonSourceDirectory}'.");
 
-        string targetDirectory = Path.Combine(Path.GetTempPath(), $"adyen-openapi-json-{Guid.NewGuid():N}");
-        await _directoryUtil.Create(targetDirectory, false, cancellationToken);
+        string targetDirectory = await _pathUtil.GetUniqueTempDirectory("adyen-openapi-json", cancellationToken: cancellationToken).NoSync();
 
-        string[] jsonFiles = Directory.GetFiles(jsonSourceDirectory, "*.json", SearchOption.TopDirectoryOnly);
+        List<string> jsonFiles = await _directoryUtil.GetFilesByExtension(jsonSourceDirectory, ".json", recursive: false, cancellationToken).NoSync();
 
         var latestFiles = jsonFiles
             .Select(filePath => new
@@ -113,7 +116,7 @@ public sealed class FileOperationsUtil : IFileOperationsUtil
             cancellationToken.ThrowIfCancellationRequested();
 
             string destinationPath = Path.Combine(targetDirectory, latestFile.FileName);
-            File.Copy(latestFile.FilePath, destinationPath, overwrite: true);
+            await _fileUtil.Copy(latestFile.FilePath, destinationPath, log: false, cancellationToken).NoSync();
         }
 
         _logger.LogInformation("Selected {Count} latest versioned Adyen JSON files from {SourceDirectory}", latestFiles.Count, jsonSourceDirectory);

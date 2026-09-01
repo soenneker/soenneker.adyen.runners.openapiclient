@@ -5,6 +5,9 @@ using Soenneker.OpenApi.Fixer.Registrars;
 using Soenneker.OpenApi.Merger.Registrars;
 using Soenneker.Adyen.Runners.OpenApiClient.Utils;
 using Soenneker.Adyen.Runners.OpenApiClient.Utils.Abstract;
+using Soenneker.Utils.Directory.Registrars;
+using Soenneker.Utils.File.Registrars;
+using Soenneker.Utils.Path.Registrars;
 
 namespace Soenneker.Adyen.Runners.OpenApiClient;
 
@@ -33,6 +36,9 @@ public static class Startup
         services.AddHostedService<ConsoleHostedService>()
                 .AddSingleton<IFileOperationsUtil, FileOperationsUtil>()
                 .AddRunnersManagerAsSingleton()
+                .AddDirectoryUtilAsSingleton()
+                .AddFileUtilAsSingleton()
+                .AddPathUtilAsSingleton()
                 .AddOpenApiMergerAsSingleton()
                 .AddOpenApiFixerAsSingleton()
                 .AddKiotaUtilAsSingleton();
