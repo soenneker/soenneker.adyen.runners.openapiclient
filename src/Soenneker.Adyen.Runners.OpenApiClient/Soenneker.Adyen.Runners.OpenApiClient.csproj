@@ -29,7 +29,7 @@
         <PackageReference Include="Soenneker.OpenApi.Fixer" Version="4.0.315" />
         <PackageReference Include="Soenneker.OpenApi.Merger" Version="4.0.107" />
         <PackageReference Include="Soenneker.Utils.Directory" Version="4.0.915" />
-        <PackageReference Include="Soenneker.Utils.File" Version="4.0.2245" />
+        <PackageReference Include="Soenneker.Utils.File" Version="4.0.2246" />
         <PackageReference Include="Soenneker.Utils.Path" Version="4.0.1209" />
     </ItemGroup>
 </Project>
