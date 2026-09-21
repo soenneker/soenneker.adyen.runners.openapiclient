@@ -66,7 +66,7 @@ public sealed class FileOperationsUtil : IFileOperationsUtil
         string openApiGitUrl = _configuration["Adyen:ClientGenerationUrl"] ?? "https://github.com/Adyen/adyen-openapi";
 
         string sourceDirectory = await _gitUtil.CloneToTempDirectory(NormalizeGitRepositoryUrl(openApiGitUrl), cancellationToken: cancellationToken);
-        string latestJsonDirectory = await CopyLatestJsonFiles(sourceDirectory, cancellationToken);
+        string latestJsonDirectory = await PrepareLatestJsonFiles(sourceDirectory, cancellationToken);
 
         OpenApiDocument merged = await _openApiMerger.MergeDirectory(latestJsonDirectory, cancellationToken);
         string json = _openApiMerger.ToJson(merged);
@@ -88,7 +88,7 @@ public sealed class FileOperationsUtil : IFileOperationsUtil
         await BuildAndPush(gitDirectory, cancellationToken).NoSync();
     }
 
-    private async ValueTask<string> CopyLatestJsonFiles(string sourceDirectory, CancellationToken cancellationToken)
+    private async ValueTask<string> PrepareLatestJsonFiles(string sourceDirectory, CancellationToken cancellationToken)
     {
         string jsonSourceDirectory = Path.Combine(sourceDirectory, "json");
 
@@ -116,10 +116,11 @@ public sealed class FileOperationsUtil : IFileOperationsUtil
             cancellationToken.ThrowIfCancellationRequested();
 
             string destinationPath = Path.Combine(targetDirectory, latestFile.FileName);
-            await _fileUtil.Copy(latestFile.FilePath, destinationPath, log: false, cancellationToken).NoSync();
+            // Repair source schemas before the merger validates the combined document.
+            await _openApiFixer.Fix(latestFile.FilePath, destinationPath, cancellationToken).NoSync();
         }
 
-        _logger.LogInformation("Selected {Count} latest versioned Adyen JSON files from {SourceDirectory}", latestFiles.Count, jsonSourceDirectory);
+        _logger.LogInformation("Selected and fixed {Count} latest versioned Adyen JSON files from {SourceDirectory}", latestFiles.Count, jsonSourceDirectory);
 
         return targetDirectory;
     }
