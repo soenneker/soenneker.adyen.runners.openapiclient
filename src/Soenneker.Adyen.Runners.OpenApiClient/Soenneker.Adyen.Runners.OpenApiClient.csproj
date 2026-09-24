@@ -29,4 +29,10 @@
         <PackageReference Include="Soenneker.OpenApi.Fixer" Version="4.0.362" />
         <PackageReference Include="Soenneker.OpenApi.Merger" Version="4.0.173" />
     </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Soenneker.Enums.DeployEnvironment" Version="4.0.242" />
+    </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Soenneker.Extensions.ValueTask" Version="4.0.123" />
+    </ItemGroup>
 </Project>
