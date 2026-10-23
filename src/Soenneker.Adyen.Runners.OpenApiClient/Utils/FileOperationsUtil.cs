@@ -84,6 +84,7 @@ public sealed class FileOperationsUtil : IFileOperationsUtil
         await DeleteAllExceptCsproj(srcDirectory, cancellationToken);
 
         await _kiotaUtil.Generate(fixedFilePath, "AdyenOpenApiClient", Constants.Library, gitDirectory, cancellationToken).NoSync();
+        await _openApiFixer.SanitizeGeneratedEnumMembers(Path.Combine(gitDirectory, "src", Constants.Library), cancellationToken).NoSync();
 
         await BuildAndPush(gitDirectory, cancellationToken).NoSync();
     }
