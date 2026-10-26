@@ -31,7 +31,7 @@
         <PackageReference Include="Soenneker.OpenApi.Merger" Version="4.0.227" />
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="Soenneker.Enums.DeployEnvironment" Version="4.0.260" />
+        <PackageReference Include="Soenneker.Enums.DeployEnvironment" Version="11.0.261" />
     </ItemGroup>
     <ItemGroup>
         <PackageReference Include="Soenneker.Extensions.ValueTask" Version="4.0.133" />
